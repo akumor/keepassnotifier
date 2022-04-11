@@ -1,0 +1,21 @@
+name: Go Generate
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        default: "1.18"
+        required: false
+        type: string
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    name: Go Generate
+    steps:
+      - uses: actions/checkout@v1
+      - uses: arduino/setup-protoc@v1
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Go generate and diff
+        run: DELTA_CHECK=true make generate
