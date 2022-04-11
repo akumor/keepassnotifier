@@ -1,0 +1,43 @@
+project_name: keepassnotifier
+before:
+  hooks:
+    - go mod download
+builds:
+  - id: keepassnotifier
+    env:
+      - CGO_ENABLED=0
+    main: ./cmd/main.go
+    ldflags:
+      - -s -w -X github.com/akumor/keepassnotifier/version.Version={{.Version}} -X github.com/akumor/keepassnotifier/version.Build={{.ShortCommit}} -X github.com/akumor/keepassnotifier/version.BuildTime={{.Date}}
+
+    binary: keepassnotifier
+    goos:
+      - linux
+      - windows
+      - darwin
+archives:
+  - id: keepassnotifier-archive
+    name_template: |-
+      keepassnotifier_{{ .Tag }}_{{ .Os }}_{{ .Arch -}}
+      {{- with .Arm -}}
+      {{- if (eq . "6") -}}hf
+      {{- else -}}v{{- . -}}
+      {{- end -}}
+      {{- end -}}
+    builds:
+      - keepassnotifier
+    replacements:
+      386: i386
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
