@@ -25,7 +25,16 @@ func (c *Credentials) LoadCredentialsFromEnv() error {
 
 // NewCredentialsFromFile returns a new decoded Credentials struct
 func (c *Credentials) LoadCredentialsFromFile(credPath string) error {
-	// Open config file
+	// validate credentials file path
+	s, err := os.Stat(credPath)
+	if err != nil {
+		return err
+	}
+	if s.IsDir() {
+		return fmt.Errorf("'%s' is a directory, not a normal file", credPath)
+	}
+
+	// Open credentials file
 	file, err := os.Open(credPath)
 	if err != nil {
 		return err
@@ -40,18 +49,5 @@ func (c *Credentials) LoadCredentialsFromFile(credPath string) error {
 		return err
 	}
 
-	return nil
-}
-
-// ValidateCredPath just makes sure, that the path provided is a file,
-// that can be read
-func ValidateCredPath(path string) error {
-	s, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-	if s.IsDir() {
-		return fmt.Errorf("'%s' is a directory, not a normal file", path)
-	}
 	return nil
 }

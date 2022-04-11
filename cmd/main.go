@@ -74,7 +74,12 @@ func main() {
 				return err
 			}
 
-			db.UnlockProtectedEntries()
+			err = db.UnlockProtectedEntries()
+			if err != nil {
+				// TODO wrap the error and return it without logging
+				glog.Errorf("failed to unlock protected entries: %v", err)
+				return err
+			}
 
 			nearlyExpiredEntries := make([]gokeepasslib.Entry, 0)
 			for index := range db.Content.Root.Groups {

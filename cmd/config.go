@@ -40,6 +40,15 @@ func NewConfig(configPath string) (*Config, error) {
 	// Create config structure
 	config := &Config{}
 
+	// Validate config filepath
+	s, err := os.Stat(configPath)
+	if err != nil {
+		return nil, err
+	}
+	if s.IsDir() {
+		return nil, fmt.Errorf("'%s' is a directory, not a normal file", configPath)
+	}
+
 	// Open config file
 	file, err := os.Open(configPath)
 	if err != nil {
@@ -56,17 +65,4 @@ func NewConfig(configPath string) (*Config, error) {
 	}
 
 	return config, nil
-}
-
-// ValidateConfigPath just makes sure, that the path provided is a file,
-// that can be read
-func ValidateConfigPath(path string) error {
-	s, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-	if s.IsDir() {
-		return fmt.Errorf("'%s' is a directory, not a normal file", path)
-	}
-	return nil
 }
