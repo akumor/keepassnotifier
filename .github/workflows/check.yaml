@@ -1,0 +1,57 @@
+name: keepassnotifier Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    uses: akumor/keepassnotifier/.github/workflows/lint.yaml@main
+
+  tests:
+    name: Unit Tests
+    uses: akumor/keepassnotifier/.github/workflows/tests.yaml@main
+    secrets:
+      KEEPASSNOTIFIER_BOT_PAT: ${{ secrets.KEEPASSNOTIFIER_BOT_PAT }}
+
+  docker-build:
+    name: Docker Build Images
+    uses: akumor/keepassnotifier/.github/workflows/docker_build.yaml@main
+
+  generate:
+    name: Check Go Generate
+    uses: akumor/keepassnotifier/.github/workflows/go_generate.yaml@main
+
+  bump_version:
+    name: Bump Version
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: [ endtoend,  integration, lint, tests, generate ] # Only to ensure it can successfully build
+    uses: akumor/keepassnotifier/.github/workflows/bump_version.yaml@main
+    secrets:
+      KEEPASSNOTIFIER_BOT_PAT: ${{ secrets.KEEPASSNOTIFIER_BOT_PAT }}
+
+  goreleaser:
+    name: Goreleaser
+    needs: [ bump_version ] # Only to ensure it can successfully build
+    uses: akumor/keepassnotifier/.github/workflows/goreleaser.yaml@main
+    secrets:
+      KEEPASSNOTIFIER_BOT_PAT: ${{ secrets.KEEPASSNOTIFIER_BOT_PAT }}
+
+  push_docker_image:
+    name: Build & Push keepassnotifier Image
+    needs: [ bump_version ]
+    uses: akumor/keepassnotifier/.github/workflows/publish.yaml@main
+    with:
+      version: ${{ needs.bump_version.outputs.version }}
+      dockerfile: Dockerfile
+      push: true
+      repository: ${{ github.repository }}
+    secrets:
+      KEEPASSNOTIFIER_BOT_PAT: ${{ secrets.KEEPASSNOTIFIER_BOT_PAT }}
+      KEEPASSNOTIFIER_BOT_USERNAME: ${{ secrets.KEEPASSNOTIFIER_BOT_USERNAME }}

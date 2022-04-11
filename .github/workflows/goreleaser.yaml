@@ -1,0 +1,30 @@
+name: Go Releaser
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        default: "1.18"
+        required: false
+        type: string
+    secrets:
+      KEEPASSNOTIFIER_BOT_PAT:
+        required: true
+jobs:
+  goreleaser:
+    name: Goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: "0"
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.KEEPASSNOTIFIER_BOT_PAT }}
