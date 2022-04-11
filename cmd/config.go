@@ -33,6 +33,12 @@ type Config struct {
 			Idle time.Duration `yaml:"idle"`
 		} `yaml:"timeout"`
 	} `yaml:"entries"`
+	Notifiers struct {
+		SendGrid struct {
+			FromEmailAddress string `yaml:"from_email_address"`
+			ToEmailAddress   string `yaml:"to_email_address"`
+		} `yaml:"sendgrid"`
+	} `yaml:"notifiers"`
 }
 
 // NewConfig returns a new decoded Config struct

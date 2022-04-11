@@ -11,6 +11,10 @@ type Credentials struct {
 		// password to use for accessing the keepass database
 		DatabasePassword string `json:"database_password"`
 	} `yaml:"keepass"`
+	SendGrid struct {
+		// API key to use for sending a message with sendgrid
+		ApiKey string `json:"api_key"`
+	} `yaml:"sendgrid"`
 }
 
 // NewCredentialsFromFile returns a new decoded Credentials struct
@@ -19,6 +23,11 @@ func (c *Credentials) LoadCredentialsFromEnv() error {
 	val := os.ExpandEnv(x)
 	if val != "" {
 		c.Keepass.DatabasePassword = val
+	}
+	x = "${KEEPASSNOTIFIER_SENDGRID_API_KEY}"
+	val = os.ExpandEnv(x)
+	if val != "" {
+		c.SendGrid.ApiKey = val
 	}
 	return nil
 }

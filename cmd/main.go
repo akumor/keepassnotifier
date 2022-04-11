@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/akumor/keepassnotifier/internal/entries"
+	"github.com/akumor/keepassnotifier/internal/notifiers"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	gokeepasslib "github.com/tobischo/gokeepasslib/v3"
@@ -92,10 +92,27 @@ func main() {
 				nearlyExpiredEntries = append(nearlyExpiredEntries, newEntries...)
 			}
 
+			// log the nearly expired entries
 			for index := range nearlyExpiredEntries {
-				fmt.Println(nearlyExpiredEntries[index].GetTitle())
+				glog.Info(nearlyExpiredEntries[index].GetTitle())
 			}
 			glog.Infof("%v\n", nearlyExpiredEntries)
+
+			// send email notifications via sendgrid if notifier is configured
+			if cfg.Notifiers.SendGrid.FromEmailAddress != "" && cfg.Notifiers.SendGrid.ToEmailAddress != "" && creds.SendGrid.ApiKey != "" {
+				sg, err := notifiers.NewSendGrid(creds.SendGrid.ApiKey, cfg.Notifiers.SendGrid.FromEmailAddress, cfg.Notifiers.SendGrid.ToEmailAddress)
+				if err != nil {
+					// TODO wrap the error and return it without logging
+					glog.Errorf("failed to send notification via sendgrid: %v", err)
+					return err
+				}
+				// build message to send via sendgrid
+				message := "The following keepass database entries are close to expiring:<br>"
+				for index := range nearlyExpiredEntries {
+					message = message + nearlyExpiredEntries[index].GetTitle() + "\t" + nearlyExpiredEntries[index].Times.ExpiryTime.Time.String() + "<br>"
+				}
+				sg.Notify(message)
+			}
 			return nil
 		},
 	}
