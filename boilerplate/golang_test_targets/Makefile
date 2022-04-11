@@ -1,6 +1,10 @@
 
+.PHONY: download_tooling
+download_tooling: #download dependencies (including test deps) for the package
+	@boilerplate/golang_test_targets/download_tooling.sh
+
 .PHONY: generate
-generate: #generate go code
+generate: download_tooling #generate go code
 	@boilerplate/golang_test_targets/go-gen.sh
 
 .PHONY: lint
@@ -18,7 +22,7 @@ mod_download: #download dependencies (including test deps) for the package
 	go mod download
 
 .PHONY: install
-install: mod_download
+install: download_tooling mod_download
 
 .PHONY: show
 show:
