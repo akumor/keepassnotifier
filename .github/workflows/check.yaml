@@ -31,7 +31,7 @@ jobs:
   bump_version:
     name: Bump Version
     if: ${{ github.event_name != 'pull_request' }}
-    needs: [ endtoend,  integration, lint, tests, generate ] # Only to ensure it can successfully build
+    needs: [ lint, tests, generate ] # Only to ensure it can successfully build
     uses: akumor/keepassnotifier/.github/workflows/bump_version.yaml@main
     secrets:
       KEEPASSNOTIFIER_BOT_PAT: ${{ secrets.KEEPASSNOTIFIER_BOT_PAT }}
